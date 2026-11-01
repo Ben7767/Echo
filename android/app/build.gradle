@@ -13,12 +13,12 @@ preBuild.dependsOn('copyWebGame')
 
 android {
     namespace 'com.tech4u.echo'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId 'com.tech4u.echo'
         minSdk 24
-        targetSdk 34
+        targetSdk 36
         versionCode((System.getenv('VERSION_CODE') ?: '1').toInteger())
         versionName "1.0." + (System.getenv('VERSION_CODE') ?: '1')
     }

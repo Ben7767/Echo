@@ -23,7 +23,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.14.3'
 
       # Optional: use your own private signing key stored in repo secrets.
       - name: Use private signing key (if configured)

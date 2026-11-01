@@ -77,6 +77,10 @@ This repo includes a workflow at `.github/workflows/pages.yml` that deploys to G
 2. Go to **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 3. The game will be live at `https://<your-username>.github.io/<repo-name>/`.
 
+## Privacy
+
+ECHO collects no data. See the [privacy policy](privacy.html).
+
 ## Tech
 
 - A single self-contained `index.html` written in vanilla JavaScript, Canvas 2D and the Web Audio API

@@ -2,15 +2,18 @@ package com.tech4u.echo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.DisplayCutout;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import android.window.OnBackInvokedDispatcher;
 
 /**
  * ECHO by Tech4U.
@@ -40,8 +43,28 @@ public class MainActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient());
         web.addJavascriptInterface(new Bridge(), "Android");
 
+        // Keep the HUD clear of camera notches / cutouts (Android 15+ is always edge-to-edge).
+        web.setOnApplyWindowInsetsListener((v, insets) -> {
+            int l = 0, t = 0, r = 0, b = 0;
+            if (Build.VERSION.SDK_INT >= 28) {
+                DisplayCutout c = insets.getDisplayCutout();
+                if (c != null) {
+                    l = c.getSafeInsetLeft(); t = c.getSafeInsetTop();
+                    r = c.getSafeInsetRight(); b = c.getSafeInsetBottom();
+                }
+            }
+            v.setPadding(l, t, r, b);
+            return insets;
+        });
+
         setContentView(web);
         hideSystemBars();
+
+        // Android 13+ back handling (required when targeting Android 16).
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
+        }
 
         if (savedInstanceState != null) {
             web.restoreState(savedInstanceState);
@@ -82,10 +105,15 @@ public class MainActivity extends Activity {
         hideSystemBars();
     }
 
+    /** Back on Android 12 and older. */
     @SuppressWarnings("deprecation")
     @Override
     public void onBackPressed() {
-        // Back = pause / go to menu. On the menu, press back twice to exit.
+        handleBack();
+    }
+
+    /** Back = pause / go to menu. On the menu, press back twice to exit. */
+    private void handleBack() {
         web.evaluateJavascript("window.echoBack ? window.echoBack() : 'exit'", value -> {
             if (value != null && value.contains("exit")) {
                 long now = System.currentTimeMillis();
