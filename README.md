@@ -21,6 +21,44 @@ Open `index.html` in any browser. There's no build step and nothing to install.
 - **Combo multiplier.** Chain kills for up to x5 points.
 - Three enemy types: chasers, dashers that telegraph before they charge, and tanks that split when destroyed.
 
+## Android app (APK + AAB)
+
+The `android/` folder is a tiny native Android project. It's a full-screen WebView that runs the same `index.html`, with a native share sheet, back-button handling, immersive mode and offline play.
+
+**You don't need Android Studio.** Every push to `main` triggers `.github/workflows/android.yml`, which builds and publishes a new **GitHub Release** with:
+
+- `ECHO-v1.0.N.apk`: install it directly on any Android phone.
+- `ECHO-v1.0.N.aab`: upload this one to **Google Play Console**.
+
+To get them, open the repo's **Releases** page, or **Actions → latest run → Artifacts**.
+
+### Signing key
+
+A development keystore (`android/app/echo-release.jks`, password `tech4u-echo`) is included so that every build is signed with the same key and installs update cleanly.
+
+⚠️ **Before publishing on Google Play**, create your own private key and keep it secret:
+
+```bash
+keytool -genkeypair -keystore my-key.jks -storetype PKCS12 -alias echo \
+  -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 my-key.jks   # copy the output
+```
+
+Then in **GitHub → Settings → Secrets and variables → Actions** add:
+`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` (`echo`), `KEY_PASSWORD`.
+The workflow automatically uses them instead of the development key.
+
+### Build locally (optional)
+
+```bash
+cd android
+gradle assembleRelease bundleRelease   # needs JDK 17 + Android SDK
+```
+
+## Install as a web app (PWA)
+
+When the game is served from GitHub Pages, open it in Chrome on Android and choose **Add to Home screen**. It runs full-screen and works offline.
+
 ## Controls
 
 | Input | Action |
@@ -42,7 +80,8 @@ This repo includes a workflow at `.github/workflows/pages.yml` that deploys to G
 ## Tech
 
 - A single self-contained `index.html` written in vanilla JavaScript, Canvas 2D and the Web Audio API
-- Uses no frameworks and no assets. It works offline once loaded.
+- Uses no frameworks and no audio or image assets. It works offline once loaded (PWA + service worker).
+- The Android wrapper is plain Java with zero library dependencies.
 - Runs a fixed-timestep simulation, so echo replays are frame-exact
 - Uses a seeded PRNG (mulberry32) for the daily challenge
 - Keeps high scores in `localStorage`

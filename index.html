@@ -10,6 +10,8 @@
 <meta property="og:description" content="Every 20 seconds time resets and your echo replays every move and every shot. Can you outlive your past?">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305060d'/%3E%3Cpath d='M27 16 9 6l4 10-4 10z' fill='%2336d6ff'/%3E%3C/svg%3E">
 <title>ECHO</title>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;900&display=swap" rel="stylesheet">
@@ -196,7 +198,7 @@ const up=e=>{if(drag&&e.pointerId===drag.id)drag=null};
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='Escape'||e.code==='KeyP'){if(state==='playing')pause();else if(state==='paused')resume()}});
 addEventListener('keyup',e=>{keys[e.code]=0});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='playing')pause()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(state==='playing')pause();sleepAudio()}});
 
 /* ---------- flow ---------- */
 function show(id,on){$(id).classList.toggle('hidden',!on)}
@@ -231,12 +233,18 @@ function gameOver(){
   $('fInfo').textContent='Reached round '+round+' · '+kills+' kills ('+echoKills+' by echoes) · Max combo '+maxCombo;
   setTimeout(()=>{show('hud',0);show('over',1)},900);
 }
-$('start').onclick=()=>newGame('daily');$('endless').onclick=()=>newGame('endless');$('again').onclick=()=>newGame();$('share').onclick=share;$('home').onclick=()=>{show('over',0);show('menu',1);state='menu';menuInfo()};$('resume').onclick=resume;
+$('start').onclick=()=>newGame('daily');$('endless').onclick=()=>newGame('endless');$('again').onclick=()=>newGame();$('share').onclick=share;$('home').onclick=toMenu;
+function toMenu(){show('over',0);show('pause',0);show('hud',0);show('menu',1);state='menu';$('bar').style.width='0';menuInfo()}
+window.echoBack=()=>{if(state==='playing'){pause();return 'ok'}if(state==='paused'||state==='over'){toMenu();return 'ok'}if(state==='trans')return 'ok';return 'exit'};
+function sleepAudio(){try{if(AC&&AC.state==='running')AC.suspend()}catch(e){}}
+addEventListener('apppause',()=>{if(state==='playing')pause();sleepAudio()});$('resume').onclick=resume;
 
+const PLAY_URL=/^https?:/.test(location.protocol)?location.origin+location.pathname:'';
 function shareText(){const sq=['🟥','🟧','🟩','🟪','🟦','🟨','🟫'];let e='';for(let i=0;i<round-1;i++)e+=sq[i%sq.length];
   return (mode==='daily'?'ECHO Daily #'+DAY:'ECHO Endless')+' 🔁\n'+e+(e?' ':'')+'💀 Round '+round+'\n'+score.toLocaleString('en-US')+' pts · combo x'+maxCombo+'\n'+
-  (killer&&killer.src==='echo'?'Killed by my own past self 😅':'Can you outlive your past?')+'\nby Tech4U · '+location.origin+location.pathname}
+  (killer&&killer.src==='echo'?'Killed by my own past self 😅':'Can you outlive your past?')+'\nby Tech4U'+(PLAY_URL?' · '+PLAY_URL:'')}
 function share(){const t=shareText();let ok=false;
+  if(window.Android&&Android.share){Android.share(t);$('copied').textContent='';return}
   try{navigator.clipboard.writeText(t).then(()=>{$('copied').textContent='Copied! Paste it anywhere 📋'},()=>fallback(t));ok=true}catch(e){}
   if(!ok)fallback(t)}
 function fallback(t){const a=$('shareBox');a.value=t;a.classList.remove('hidden');a.select();$('copied').textContent='Copy the text above'}
@@ -407,6 +415,7 @@ function hud(){const k=hp+'|'+recs.length+'|'+recs.map(g=>g.c).join();if(k===las
 let last=performance.now(),acc=0;const STEP=1000/60;
 function loop(t){acc+=Math.min(100,t-last);last=t;let n=0;while(acc>=STEP&&n<5){update();acc-=STEP;n++}if(n===5)acc=0;draw();hud();requestAnimationFrame(loop)}
 menuInfo();requestAnimationFrame(loop);
+if('serviceWorker'in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
 </body>

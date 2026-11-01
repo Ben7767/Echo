@@ -1,0 +1,57 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The game lives in ../../index.html (repo root). It is copied into the APK at build time,
+// so the web version and the Android app always ship the exact same game.
+def webAssets = layout.buildDirectory.dir("generated/webassets")
+tasks.register('copyWebGame', Copy) {
+    from(rootProject.file('../index.html'))
+    into(webAssets)
+}
+preBuild.dependsOn('copyWebGame')
+
+android {
+    namespace 'com.tech4u.echo'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.tech4u.echo'
+        minSdk 24
+        targetSdk 34
+        versionCode((System.getenv('VERSION_CODE') ?: '1').toInteger())
+        versionName "1.0." + (System.getenv('VERSION_CODE') ?: '1')
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('echo-release.jks')
+            storePassword System.getenv('KEYSTORE_PASSWORD') ?: 'tech4u-echo'
+            keyAlias System.getenv('KEY_ALIAS') ?: 'echo'
+            keyPassword System.getenv('KEY_PASSWORD') ?: 'tech4u-echo'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs += [webAssets.get().asFile]
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
