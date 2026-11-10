@@ -16,6 +16,7 @@ Open `index.html` in any browser. There's no build step and nothing to install.
 - **Daily challenge.** One seeded level per day, the same for every player on Earth.
 - **World ranking.** A global top 50 for each Daily Challenge, with your own rank ("#37 of 1,204"). It uses anonymous Firebase Auth and Firestore REST, with no SDK.
 - **Endless mode.** A random seed each run.
+- **Live 1v1 duels.** Create a room, share the 4-letter code, and play the same level at the same moment. Your rival flies as a ghost in your arena, a live score bar tracks both of you, combos send swarms and boss kills send tanks to your rival, and you can rematch. It uses Firebase Realtime Database over REST and SSE, with no SDK.
 - **Challenge a friend.** Share a link that drops your friend into the exact same level with your score as the target, shows a live "beat them" banner, and lets them challenge you back.
 - **Haptics.** Vibration on hits, bombs, bosses and unlocks, via the native Android vibrator, with an on/off toggle.
 - **Share card.** At the end of a run you get a Wordle-style emoji result you can paste anywhere.

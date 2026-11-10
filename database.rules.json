@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "rooms": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() || data.child('host/uid').val() === auth.uid || data.child('guest/uid').val() === auth.uid || !data.child('guest').exists() || data.child('created').val() < now - 3600000)",
+        ".validate": "$code.matches(/^[A-Z0-9]{4}$/)"
+      }
+    }
+  }
+}
