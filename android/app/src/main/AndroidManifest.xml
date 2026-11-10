@@ -3,6 +3,8 @@
 
     <!-- Only for the optional daily world leaderboard; the game itself works offline. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Haptic feedback during gameplay. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:label="ECHO"

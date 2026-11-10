@@ -16,6 +16,8 @@ Open `index.html` in any browser. There's no build step and nothing to install.
 - **Daily challenge.** One seeded level per day, the same for every player on Earth.
 - **World ranking.** A global top 50 for each Daily Challenge, with your own rank ("#37 of 1,204"). It uses anonymous Firebase Auth and Firestore REST, with no SDK.
 - **Endless mode.** A random seed each run.
+- **Challenge a friend.** Share a link that drops your friend into the exact same level with your score as the target, shows a live "beat them" banner, and lets them challenge you back.
+- **Haptics.** Vibration on hits, bombs, bosses and unlocks, via the native Android vibrator, with an on/off toggle.
 - **Share card.** At the end of a run you get a Wordle-style emoji result you can paste anywhere.
 - **Adaptive music.** A synthwave loop that gains a layer (hats, hook, pads, double kick) with each echo.
 - **Procedural audio.** Layered explosions with sub-kick, distortion, crack, reverb tail and debris. Everything is made with the Web Audio API, so the game uses no audio files.

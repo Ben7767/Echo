@@ -1,9 +1,13 @@
 package com.tech4u.echo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.DisplayCutout;
@@ -139,8 +143,47 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    @SuppressWarnings("deprecation")
+    private Vibrator vibrator() {
+        if (Build.VERSION.SDK_INT >= 31) {
+            VibratorManager vm = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            return vm != null ? vm.getDefaultVibrator() : null;
+        }
+        return (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
     /** Exposed to JavaScript as window.Android */
     private class Bridge {
+        @SuppressWarnings("deprecation")
+        @JavascriptInterface
+        public void vibrate(int ms, int amplitude) {
+            try {
+                Vibrator v = vibrator();
+                if (v == null || !v.hasVibrator()) return;
+                ms = Math.max(1, Math.min(ms, 1000));
+                if (Build.VERSION.SDK_INT >= 26) {
+                    int amp = amplitude > 0 ? Math.min(255, amplitude) : VibrationEffect.DEFAULT_AMPLITUDE;
+                    v.vibrate(VibrationEffect.createOneShot(ms, amp));
+                } else {
+                    v.vibrate(ms);
+                }
+            } catch (Exception ignored) { }
+        }
+
+        @SuppressWarnings("deprecation")
+        @JavascriptInterface
+        public void vibratePattern(String csv) {
+            try {
+                Vibrator v = vibrator();
+                if (v == null || !v.hasVibrator() || csv == null) return;
+                String[] parts = csv.split(",");
+                long[] pattern = new long[Math.min(parts.length, 20)];
+                for (int i = 0; i < pattern.length; i++) pattern[i] = Math.max(0, Math.min(1000, Long.parseLong(parts[i].trim())));
+                if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createWaveform(pattern, -1));
+                else v.vibrate(pattern, -1);
+            } catch (Exception ignored) { }
+        }
+
         @JavascriptInterface
         public void share(String text) {
             Intent i = new Intent(Intent.ACTION_SEND);
