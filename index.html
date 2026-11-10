@@ -157,10 +157,10 @@ function initAudio(){try{
 let nbuf=null;
 function nb(){if(!nbuf){nbuf=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate);const a=nbuf.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1}return nbuf}
 function env(g,t,v,a,d){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d)}
-function tone(f,d,type,v,f2,dest,t0){if(!AC||muted)return;const t=t0||AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);env(g,t,v||.05,.004,d);o.connect(g);g.connect(dest||OUT);o.start(t);o.stop(t+d+.05)}
-function noise(d,v,type,f1,f2,dest,q){if(!AC||muted)return;const t=AC.currentTime,s=AC.createBufferSource(),g=AC.createGain(),f=AC.createBiquadFilter();
+function tone(f,d,type,v,f2,dest,t0){if(!AC||muted||!isFinite(f)||(f2!=null&&!isFinite(f2)))return;try{const t=t0||AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);env(g,t,v||.05,.004,d);o.connect(g);g.connect(dest||OUT);o.start(t);o.stop(t+d+.05)}catch(e){}}
+function noise(d,v,type,f1,f2,dest,q){if(!AC||muted)return;try{const t=AC.currentTime,s=AC.createBufferSource(),g=AC.createGain(),f=AC.createBiquadFilter();
   s.buffer=nb();s.playbackRate.value=.8+Math.random()*.4;f.type=type||'lowpass';f.Q.value=q||.7;f.frequency.setValueAtTime(f1,t);if(f2)f.frequency.exponentialRampToValueAtTime(f2,t+d);
-  env(g,t,v,.003,d);s.connect(f);f.connect(g);g.connect(dest||OUT);s.start(t,Math.random()*1.5);s.stop(t+d+.05)}
+  env(g,t,v,.003,d);s.connect(f);f.connect(g);g.connect(dest||OUT);s.start(t,Math.random()*1.5);s.stop(t+d+.05)}catch(e){}}
 // BOOM: sub thump + distorted rumble + crack + debris, size 1=normal 2=big 3=huge
 function boom(size){if(!AC||muted)return;const now=AC.currentTime;
   if(now-lastBoom<.04){boomCount++;if(boomCount>2)return}else boomCount=0;lastBoom=now;
@@ -325,7 +325,7 @@ function kill(e,echo,c,noDrop){
   e.dead=1;kills++;if(echo)echoKills++;
   if(comboT>0)combo++;else combo=1;comboT=80;if(combo>maxCombo)maxCombo=combo;
   const mult=Math.min(5,1+Math.floor((combo-1)/4));const pts=(echo?5:10)*round*mult;score+=pts;
-  if(combo>=5&&(combo-1)%4===0){texts.push({x:e.x,y:e.y-18,s:'x'+mult+' COMBO',c:'#ffe14d',t:0});sfx.combo(combo/4)}
+  if(combo>=5&&(combo-1)%4===0){texts.push({x:e.x,y:e.y-18,s:'x'+mult+' COMBO',c:'#ffe14d',t:0});sfx.combo(Math.floor((combo-1)/4))}
   const big=e.type==='tank'||e.type==='shoot';
   burst(e.x,e.y,col(e),big?32:e.type==='swarm'?8:16,big?5.5:3.5);ring(e.x,e.y,col(e),big?75:40,big?4:2);
   shake=Math.max(shake,big?10:e.type==='swarm'?2:4);sfx.boom(big?2:1);if(big)hitStop=Math.max(hitStop,3);
@@ -574,7 +574,7 @@ function hud(){const pk=Object.keys(perks).map(k=>PERKS[k].i+(perks[k]>1?perks[k
 
 /* ---------- loop ---------- */
 let last=performance.now(),acc=0;const STEP=1000/60;
-function loop(t){acc+=Math.min(100,t-last);last=t;let n=0;while(acc>=STEP&&n<5){update();acc-=STEP;n++}if(n===5)acc=0;draw();hud();requestAnimationFrame(loop)}
+function loop(t){requestAnimationFrame(loop);acc+=Math.min(100,t-last);last=t;let n=0;try{while(acc>=STEP&&n<5){update();acc-=STEP;n++}if(n===5)acc=0;draw();hud()}catch(e){console.error(e);acc=0}}
 menuInfo();requestAnimationFrame(loop);
 if('serviceWorker'in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
