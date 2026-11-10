@@ -62,6 +62,23 @@ button.big:active,button.ghost:active{transform:scale(.96)}
 #toast canvas{width:44px;height:44px}#toast .tk{font-size:10px;letter-spacing:2px;color:#ffe14d;font-weight:700}#toast .tn{font-size:17px;font-weight:900}
 #toast.show{animation:toast 2.8s ease-out forwards}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,-14px)}10%{opacity:1;transform:translate(-50%,0)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-8px)}}
+#lb{justify-content:flex-start;padding-top:max(36px,env(safe-area-inset-top));gap:8px}
+#lbList{width:min(370px,94vw);flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:2px}
+.lbrow{display:flex;align-items:center;gap:8px;background:rgba(18,24,50,.85);border:1px solid #262f50;border-radius:12px;padding:6px 10px;font-size:14px}
+.lbrow canvas{width:24px;height:24px;flex:none}
+.lbrow .rk{width:34px;font-weight:900;color:#9fb0d8;text-align:center;flex:none}
+.lbrow .nm{flex:1;text-align:left;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow .rd{color:#6f7fa3;font-size:12px;flex:none}
+.lbrow .sc{font-weight:900;color:#e8f1ff;min-width:70px;text-align:right;flex:none}
+.lbrow.t1{border-color:#ffe14d}.lbrow.t2{border-color:#c4d0ea}.lbrow.t3{border-color:#ffa630}
+.lbrow.me{background:rgba(54,214,255,.16);border-color:#36d6ff}
+.lbmsg{color:#9fb0d8;padding:30px 10px;line-height:1.6}
+.lbname{display:flex;align-items:center;gap:8px;font-size:13px;color:#9fb0d8}
+.lbname input{font-family:inherit;font-size:15px;font-weight:700;width:150px;background:#0d1020;color:#fff;border:1.5px solid #3a4565;border-radius:10px;padding:7px 10px}
+.lbname i{color:#7dff6a;font-style:normal;font-size:12px;width:52px}
+button.ghost.sm{padding:7px 12px;font-size:12px}
+button.ghost.wide{width:min(300px,80vw)}
+.wr{font-size:15px;color:#ffe14d;cursor:pointer;max-width:320px}.wr b{font-size:18px}.wr u{color:#9fb0d8;font-size:12px;margin-left:4px}
 #perkIcons{position:fixed;top:40px;left:14px;font-size:13px;opacity:.92;pointer-events:none;letter-spacing:1px;text-shadow:0 0 6px #000}
 button.big small{display:block;font-size:11px;font-weight:400;letter-spacing:.5px;opacity:.75;margin-top:2px}
 button.ghost{font-family:inherit;font-weight:700;font-size:15px;color:#c4d0ea;background:transparent;border:1.5px solid #3a4565;border-radius:12px;padding:11px 22px;cursor:pointer}
@@ -103,6 +120,7 @@ button.ghost{font-family:inherit;font-weight:700;font-size:15px;color:#c4d0ea;ba
   </div>
   <button class="big" id="start"><span id="dayLbl">DAILY</span><small>Same level for everyone on Earth today</small></button>
   <div class="row"><button class="ghost" id="endless">ENDLESS</button><button class="ghost" id="hangarBtn">🚀 HANGAR <span id="hcount"></span></button></div>
+  <button class="ghost wide" id="lbBtn">🏆 WORLD RANKING</button>
   <div class="best" id="menuBest"></div>
   <div class="credit">Made by <b>Tech4U</b></div>
 </div>
@@ -114,6 +132,15 @@ button.ghost{font-family:inherit;font-weight:700;font-size:15px;color:#c4d0ea;ba
   <button class="ghost" id="hback">BACK</button>
 </div>
 <div id="toast"></div>
+
+<div id="lb" class="screen hidden">
+  <div class="ptitle">🏆 WORLD RANKING</div>
+  <div class="psub" id="lbTitle"></div>
+  <div class="lbname"><span>Your name</span><input id="lbName" maxlength="16" autocomplete="off" spellcheck="false"><button class="ghost sm" id="lbSave">SAVE</button><i id="lbSaved"></i></div>
+  <div id="lbList"></div>
+  <div class="best" id="lbMe"></div>
+  <button class="ghost" id="lbClose">BACK</button>
+</div>
 
 <div id="perk" class="screen hidden">
   <div class="ptitle">CHOOSE AN UPGRADE</div>
@@ -132,6 +159,7 @@ button.ghost{font-family:inherit;font-weight:700;font-size:15px;color:#c4d0ea;ba
   <div class="rec hidden" id="newRec">NEW HIGH SCORE!</div>
   <div class="cause" id="cause"></div>
   <div class="unl" id="newShips"></div>
+  <div class="wr" id="worldRank"></div>
   <div class="best" id="fInfo"></div>
   <div class="best" id="modeLbl"></div>
   <button class="big" id="share">SHARE 📋</button>
@@ -288,18 +316,19 @@ function gameOver(){
   $('fScore').textContent=score;show('newRec',nr);$('newShips').textContent=runUnlocks.length?'🚀 Unlocked: '+runUnlocks.join(', ')+' — fly it from the Hangar!':'';
   $('cause').textContent=!killer?'':killer.src==='echo'?'Shot down by your own echo from round '+killer.r+' 😅':killer.src==='boss'?'The boss core got you 👑':killer.src==='shot'?'Hit by an enemy shot':'An enemy got you';
   $('fInfo').textContent='Reached round '+round+' · '+kills+' kills ('+echoKills+' by echoes) · Max combo '+maxCombo+(bossKills?' · '+bossKills+(bossKills>1?' bosses':' boss')+' destroyed':'');
+  $('worldRank').textContent='';lastRank='';if(mode==='daily')afterRunLB();
   setTimeout(()=>{show('hud',0);show('over',1)},900);
 }
-$('hangarBtn').onclick=openHangar;$('hback').onclick=closeHangar;$('start').onclick=()=>newGame('daily');$('endless').onclick=()=>newGame('endless');$('again').onclick=()=>newGame();$('share').onclick=share;$('home').onclick=toMenu;
+$('hangarBtn').onclick=openHangar;$('lbBtn').onclick=openLB;$('lbClose').onclick=closeLB;$('lbSave').onclick=saveName;$('lbName').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')saveName()};$('hback').onclick=closeHangar;$('start').onclick=()=>newGame('daily');$('endless').onclick=()=>newGame('endless');$('again').onclick=()=>newGame();$('share').onclick=share;$('home').onclick=toMenu;
 function toMenu(){show('over',0);show('pause',0);show('hud',0);show('menu',1);state='menu';$('bar').style.width='0';menuInfo()}
-window.echoBack=()=>{if(state==='playing'){pause();return 'ok'}if(state==='paused'||state==='over'){toMenu();return 'ok'}if(state==='trans'||state==='perk')return 'ok';if(state==='hangar'){closeHangar();return 'ok'}return 'exit'};
+window.echoBack=()=>{if(state==='playing'){pause();return 'ok'}if(state==='paused'||state==='over'){toMenu();return 'ok'}if(state==='trans'||state==='perk')return 'ok';if(state==='hangar'){closeHangar();return 'ok'}if(state==='lb'){closeLB();return 'ok'}return 'exit'};
 function sleepAudio(){try{if(AC&&AC.state==='running')AC.suspend()}catch(e){}}
 addEventListener('apppause',()=>{if(state==='playing')pause();sleepAudio()});$('resume').onclick=resume;
 
 const PLAY_URL='https://ben7767.github.io/Echo/';
 function shareText(){const sq=['🟥','🟧','🟩','🟪','🟦','🟨','🟫'];let e='';for(let i=0;i<round-1;i++)e+=sq[i%sq.length];
   return (mode==='daily'?'ECHO Daily #'+DAY:'ECHO Endless')+' 🔁\n'+e+(e?' ':'')+'💀 Round '+round+'\n'+score.toLocaleString('en-US')+' pts · combo x'+maxCombo+'\n'+(bossKills?'👑×'+bossKills+' ':'')+Object.keys(perks).map(k=>PERKS[k].i).join('')+'\n'+
-  (killer&&killer.src==='echo'?'Killed by my own past self 😅':'Can you outlive your past?')+'\nby Tech4U'+(PLAY_URL?' · '+PLAY_URL:'')}
+  (lastRank?lastRank+'\n':'')+(killer&&killer.src==='echo'?'Killed by my own past self 😅':'Can you outlive your past?')+'\nby Tech4U'+(PLAY_URL?' · '+PLAY_URL:'')}
 function share(){const t=shareText();let ok=false;
   if(window.Android&&Android.share){Android.share(t);$('copied').textContent='';return}
   try{navigator.clipboard.writeText(t).then(()=>{$('copied').textContent='Copied! Paste it anywhere 📋'},()=>fallback(t));ok=true}catch(e){}
@@ -377,6 +406,71 @@ function openHangar(){const g=$('ships');g.innerHTML='';$('hsub').textContent=un
     if(un)b.onclick=()=>{shipId=sd.id;lsSet('echo_ship',shipId);sfx.pick();openHangar()};g.appendChild(b)}
   show('menu',0);show('hangar',1);state='hangar'}
 function closeHangar(){show('hangar',0);show('menu',1);state='menu';menuInfo()}
+
+/* ---------- world leaderboard (Firebase Auth + Firestore REST) ---------- */
+const FB={key:'AIzaSyCwcPLygnodEZMycXhCeiu5OJYN8RQfgPQ',pid:'echo-tech4u'};
+const FS='https://firestore.googleapis.com/v1/projects/'+FB.pid+'/databases/(default)/documents';
+let lbName=lsGet('echo_name',null);
+if(!lbName){lbName='Pilot-'+(1000+Math.floor(Math.random()*9000));lsSet('echo_name',lbName)}
+function cleanName(n){return (n||'').replace(/[<>"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,16)}
+async function fbAuth(){
+  let a=lsGet('echo_fb',null);
+  if(a&&a.tok&&a.exp>Date.now()+60000)return a;
+  let r,j;
+  if(a&&a.rt){r=await fetch('https://securetoken.googleapis.com/v1/token?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(a.rt)});
+    if(r.ok){j=await r.json();a={uid:j.user_id,tok:j.id_token,rt:j.refresh_token,exp:Date.now()+(+j.expires_in)*1000};lsSet('echo_fb',a);return a}}
+  r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
+  if(!r.ok)throw new Error('auth '+r.status);j=await r.json();
+  a={uid:j.localId,tok:j.idToken,rt:j.refreshToken,exp:Date.now()+(+j.expiresIn)*1000};lsSet('echo_fb',a);return a}
+async function lbSubmit(day,sc,rd){
+  const a=await fbAuth();
+  const doc='projects/'+FB.pid+'/databases/(default)/documents/daily/D'+day+'/scores/'+a.uid;
+  const body={writes:[{update:{name:doc,fields:{name:{stringValue:cleanName(lbName)||'Pilot'},score:{integerValue:String(sc)},round:{integerValue:String(Math.min(60,Math.max(1,rd)))},ship:{stringValue:curShip().id}}},
+    updateTransforms:[{fieldPath:'ts',setToServerValue:'REQUEST_TIME'}]}]};
+  const r=await fetch(FS+':commit?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+a.tok},body:JSON.stringify(body)});
+  if(r.ok){lsSet('echo_sub_'+day,sc);lsSet('echo_subr_'+day,rd);return true}
+  if(r.status===403)return false; // server already has a higher score
+  throw new Error('submit '+r.status)}
+async function lbTop(day){
+  const r=await fetch(FS+'/daily/D'+day+':runQuery?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({structuredQuery:{from:[{collectionId:'scores'}],orderBy:[{field:{fieldPath:'score'},direction:'DESCENDING'}],limit:50}})});
+  if(!r.ok)throw new Error('top '+r.status);const j=await r.json();
+  return j.filter(x=>x.document).map(x=>{const f=x.document.fields;return {id:x.document.name.split('/').pop(),name:f.name.stringValue,score:+f.score.integerValue,round:+f.round.integerValue,ship:f.ship?f.ship.stringValue:'vector'}})}
+async function lbCount(day,above){
+  const q={from:[{collectionId:'scores'}]};if(above!=null)q.where={fieldFilter:{field:{fieldPath:'score'},op:'GREATER_THAN',value:{integerValue:String(above)}}};
+  const r=await fetch(FS+'/daily/D'+day+':runAggregationQuery?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({structuredAggregationQuery:{structuredQuery:q,aggregations:[{alias:'n',count:{}}]}})});
+  if(!r.ok)throw new Error('count '+r.status);const j=await r.json();return +j[0].result.aggregateFields.n.integerValue}
+async function lbRank(day,sc){const [above,total]=await Promise.all([lbCount(day,sc),lbCount(day,null)]);return {rank:above+1,total}}
+function fmt(n){return n.toLocaleString('en-US')}
+async function afterRunLB(){ // called on daily game over
+  const el=$('worldRank');el.textContent='🌍 Sending your score…';el.onclick=openLB;
+  const prev=lsGet('echo_sub_'+DAY,0),my=Math.max(prev,score);
+  try{if(score>prev&&score>0)await lbSubmit(DAY,score,round);
+    const r=await lbRank(DAY,my);el.innerHTML='🏆 World rank today: <b>#'+fmt(r.rank)+'</b> of '+fmt(r.total)+' <u>see top 50</u>';lastRank='🌍 #'+fmt(r.rank)+' of '+fmt(r.total)+' worldwide'}
+  catch(e){el.textContent='🌍 Leaderboard offline — your score is saved on this phone'}}
+async function openLB(){
+  show('menu',0);show('over',0);show('lb',1);const prevState=state;state='lb';if(prevState!=='lb')lbBack=prevState==='over'?'over':'menu';
+  $('lbTitle').textContent='DAILY #'+DAY+' · WORLD TOP 50';$('lbName').value=lbName;
+  const L=$('lbList');L.innerHTML='<div class="lbmsg">Loading…</div>';
+  try{const [top,me]=await Promise.all([lbTop(DAY),fbAuth().catch(()=>null)]);
+    const myId=me&&me.uid;L.innerHTML='';
+    if(!top.length)L.innerHTML='<div class="lbmsg">No scores yet today — be the first! 🚀</div>';
+    top.forEach((t,i)=>{const row=document.createElement('div');row.className='lbrow'+(t.id===myId?' me':'')+(i<3?' t'+(i+1):'');
+      const sd=SHIPS.find(s=>s.id===t.ship)||SHIPS[0],cv3=document.createElement('canvas');cv3.width=48;cv3.height=48;drawShipPreview(cv3,sd);
+      const rk=document.createElement('span');rk.className='rk';rk.textContent=i<3?['🥇','🥈','🥉'][i]:'#'+(i+1);
+      const nm=document.createElement('span');nm.className='nm';nm.textContent=t.name;
+      const rd=document.createElement('span');rd.className='rd';rd.textContent='R'+t.round;
+      const sc=document.createElement('span');sc.className='sc';sc.textContent=fmt(t.score);
+      row.append(rk,cv3,nm,rd,sc);L.appendChild(row)});
+    const mine=lsGet('echo_sub_'+DAY,0);
+    if(mine){const r=await lbRank(DAY,mine);$('lbMe').textContent='Your best today: '+fmt(mine)+' · #'+fmt(r.rank)+' of '+fmt(r.total)}
+    else $('lbMe').textContent='Play today\'s Daily Challenge to get on the board!'}
+  catch(e){L.innerHTML='<div class="lbmsg">Couldn\'t reach the leaderboard.<br>Check your internet connection and try again.</div>';$('lbMe').textContent=''}}
+let lbBack='menu',lastRank='';
+function closeLB(){show('lb',0);if(lbBack==='over'){show('over',1);state='over'}else{show('menu',1);state='menu';menuInfo()}}
+function saveName(){const n=cleanName($('lbName').value);if(!n)return;lbName=n;lsSet('echo_name',n);$('lbSaved').textContent='Saved ✓';setTimeout(()=>{$('lbSaved').textContent=''},1500);
+  const mine=lsGet('echo_sub_'+DAY,0);if(mine)lbSubmit(DAY,mine,lsGet('echo_subr_'+DAY,1)).then(()=>openLB()).catch(()=>{})}
 
 function col(e){return ECOL[e.type]||'#ff3d6e'}
 function burst(x,y,c,n,sp){for(let i=0;i<n;i++){if(parts.length>600)parts.shift();const a=Math.random()*TAU,s=Math.random()*sp+.5;parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,t:0,l:25+Math.random()*25,c,s:1+Math.random()*2.5})}}

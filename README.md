@@ -14,6 +14,7 @@ Open `index.html` in any browser. There's no build step and nothing to install.
 
 - **Echo mechanic.** Each round you play is recorded at a fixed 60 Hz and replayed in later rounds, with up to 6 echoes on screen at once.
 - **Daily challenge.** One seeded level per day, the same for every player on Earth.
+- **World ranking.** A global top 50 for each Daily Challenge, with your own rank ("#37 of 1,204"). It uses anonymous Firebase Auth and Firestore REST, with no SDK.
 - **Endless mode.** A random seed each run.
 - **Share card.** At the end of a run you get a Wordle-style emoji result you can paste anywhere.
 - **Adaptive music.** A synthwave loop that gains a layer (hats, hook, pads, double kick) with each echo.
