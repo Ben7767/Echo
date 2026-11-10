@@ -22,6 +22,7 @@ Open `index.html` in any browser. There's no build step and nothing to install.
 - **Upgrades between rounds.** Pick 1 of 3 perks after every round, such as Twin Shot, Overclock, Piercing, Seeker, Nova, Orbiter drones, Echo Shield, Phase and Extra Heart.
 - **Power-ups.** Enemies drop Bomb, Slow-mo, Rapid Fire, Shield and Heart.
 - **Boss every 5 rounds.** "The Core" has ring, spiral, summon and aimed-fan attack patterns, an HP bar, a rage phase and a huge death explosion.
+- **Hangar.** Unlock 9 ships through achievements (round 5, boss kills, 60-kill combos, 7 daily challenges and more). Each ship has its own shape, color and trail, and your echoes keep the ship they were recorded with.
 - **More enemies.** Shooters that telegraph their aim, plus swarms that attack in packs.
 - Six enemy types: chasers, dashers, tanks that split, shooters, swarms and the boss.
 
