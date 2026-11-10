@@ -19,7 +19,11 @@ Open `index.html` in any browser. There's no build step and nothing to install.
 - **Adaptive music.** A synthwave loop that gains a layer (hats, hook, pads, double kick) with each echo.
 - **Procedural audio.** Layered explosions with sub-kick, distortion, crack, reverb tail and debris. Everything is made with the Web Audio API, so the game uses no audio files.
 - **Combo multiplier.** Chain kills for up to x5 points.
-- Three enemy types: chasers, dashers that telegraph before they charge, and tanks that split when destroyed.
+- **Upgrades between rounds.** Pick 1 of 3 perks after every round, such as Twin Shot, Overclock, Piercing, Seeker, Nova, Orbiter drones, Echo Shield, Phase and Extra Heart.
+- **Power-ups.** Enemies drop Bomb, Slow-mo, Rapid Fire, Shield and Heart.
+- **Boss every 5 rounds.** "The Core" has ring, spiral, summon and aimed-fan attack patterns, an HP bar, a rage phase and a huge death explosion.
+- **More enemies.** Shooters that telegraph their aim, plus swarms that attack in packs.
+- Six enemy types: chasers, dashers, tanks that split, shooters, swarms and the boss.
 
 ## Android app (APK + AAB)
 
