@@ -73,6 +73,7 @@ button.big:active,button.ghost:active{transform:scale(.96)}
 .lbrow.t1{border-color:#ffe14d}.lbrow.t2{border-color:#c4d0ea}.lbrow.t3{border-color:#ffa630}
 .lbrow.me{background:rgba(54,214,255,.16);border-color:#36d6ff}
 .lbmsg{color:#9fb0d8;padding:30px 10px;line-height:1.6}
+.lbtabs{display:flex;gap:6px;background:#0d1020;border:1.5px solid #3a4565;border-radius:12px;padding:3px}.lbtabs button{font-family:inherit;font-weight:800;font-size:13px;letter-spacing:1px;color:#9fb0d8;background:none;border:0;border-radius:9px;padding:7px 14px}.lbtabs button.on{background:#2a3560;color:#fff}
 .lbname{display:flex;align-items:center;gap:8px;font-size:13px;color:#9fb0d8}
 .lbname input{font-family:inherit;font-size:15px;font-weight:700;width:150px;background:#0d1020;color:#fff;border:1.5px solid #3a4565;border-radius:10px;padding:7px 10px}
 .lbname i{color:#7dff6a;font-style:normal;font-size:12px;width:52px}
@@ -196,6 +197,7 @@ button.ghost{font-family:inherit;font-weight:700;font-size:15px;color:#c4d0ea;ba
 
 <div id="lb" class="screen hidden">
   <div class="ptitle">🏆 WORLD RANKING</div>
+  <div class="lbtabs"><button id="lbtDay" class="on">TODAY</button><button id="lbtAll">ALL TIME</button></div>
   <div class="psub" id="lbTitle"></div>
   <div class="lbname"><span>Your name</span><input id="lbName" maxlength="16" autocomplete="off" spellcheck="false"><button class="ghost sm" id="lbSave">SAVE</button><i id="lbSaved"></i></div>
   <div id="lbList"></div>
@@ -381,11 +383,11 @@ function gameOver(){
   $('fScore').textContent=score;show('newRec',nr);$('newShips').textContent=runUnlocks.length?'🚀 Unlocked: '+runUnlocks.join(', ')+' — fly it from the Hangar!':'';
   $('cause').textContent=!killer?'':killer.src==='echo'?'Shot down by your own echo from round '+killer.r+' 😅':killer.src==='boss'?'The boss core got you 👑':killer.src==='shot'?'Hit by an enemy shot':'An enemy got you';
   $('fInfo').textContent='Reached round '+round+' · '+kills+' kills ('+echoKills+' by echoes) · Max combo '+maxCombo+(bossKills?' · '+bossKills+(bossKills>1?' bosses':' boss')+' destroyed':'');
-  $('worldRank').textContent='';lastRank='';if(mode==='daily')afterRunLB();
+  $('worldRank').textContent='';lastRank='';if(mode==='daily'||mode==='endless')afterRunLB();
   saveBestRun();
   if(mode==='duel')setTimeout(duelGameOver,900);else setTimeout(()=>{show('hud',0);show('over',1)},900);
 }
-$('hangarBtn').onclick=openHangar;$('lbBtn').onclick=openLB;$('lbClose').onclick=closeLB;$('lbSave').onclick=saveName;$('lbName').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')saveName()};$('hback').onclick=closeHangar;$('chalBtn').onclick=sendChallenge;$('mpBtn').onclick=()=>openMP();$('mpBack').onclick=closeMP;$('mpCreate').onclick=createRoom;$('mpJoin').onclick=()=>joinRoom($('mpCode').value);$('mpCode').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')joinRoom($('mpCode').value)};$('mpCode').oninput=e=>{e.target.value=e.target.value.toUpperCase()};$('mpSend').onclick=sendBestChallenge;$('lbShare').onclick=shareRoom;$('lbLeave').onclick=exitDuel;$('deRe').onclick=rematch;$('deMenu').onclick=exitDuel;$('chGo').onclick=()=>newGame('challenge');$('chX').onclick=()=>{chal=null;try{history.replaceState(null,'',location.pathname)}catch(e){}showChallengeCard()};
+$('hangarBtn').onclick=openHangar;$('lbBtn').onclick=openLB;$('lbClose').onclick=closeLB;$('lbSave').onclick=saveName;$('lbtDay').onclick=()=>{lbTab='day';openLB()};$('lbtAll').onclick=()=>{lbTab='all';openLB()};$('lbName').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')saveName()};$('hback').onclick=closeHangar;$('chalBtn').onclick=sendChallenge;$('mpBtn').onclick=()=>openMP();$('mpBack').onclick=closeMP;$('mpCreate').onclick=createRoom;$('mpJoin').onclick=()=>joinRoom($('mpCode').value);$('mpCode').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')joinRoom($('mpCode').value)};$('mpCode').oninput=e=>{e.target.value=e.target.value.toUpperCase()};$('mpSend').onclick=sendBestChallenge;$('lbShare').onclick=shareRoom;$('lbLeave').onclick=exitDuel;$('deRe').onclick=rematch;$('deMenu').onclick=exitDuel;$('chGo').onclick=()=>newGame('challenge');$('chX').onclick=()=>{chal=null;try{history.replaceState(null,'',location.pathname)}catch(e){}showChallengeCard()};
 $('start').onclick=()=>newGame('daily');$('endless').onclick=()=>newGame('endless');$('again').onclick=()=>newGame();$('share').onclick=share;$('home').onclick=toMenu;
 function toMenu(){show('over',0);show('pause',0);show('hud',0);show('menu',1);state='menu';$('bar').style.width='0';menuInfo()}
 window.echoBack=()=>{if(state==='playing'){pause();return 'ok'}if(state==='paused'||state==='over'){toMenu();return 'ok'}if(state==='trans'||state==='perk')return 'ok';if(state==='hangar'){closeHangar();return 'ok'}if(state==='lb'){closeLB();return 'ok'}if(state==='mp'){closeMP();return 'ok'}if(state==='lobby'||state==='duelEnd'){exitDuel();return 'ok'}if(state==='count')return 'ok';return 'exit'};
@@ -489,40 +491,47 @@ async function fbAuth(){
   r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
   if(!r.ok)throw new Error('auth '+r.status);j=await r.json();
   a={uid:j.localId,tok:j.idToken,rt:j.refreshToken,exp:Date.now()+(+j.expiresIn)*1000};lsSet('echo_fb',a);return a}
-async function lbSubmit(day,sc,rd){
+const LBC=t=>t==='all'?'ALL':'D'+DAY, LBS=t=>t==='all'?'echo_sub_all':'echo_sub_'+DAY, LBR=t=>t==='all'?'echo_subr_all':'echo_subr_'+DAY;
+let lbTab='day';
+async function lbSubmit(t,sc,rd){
   const a=await fbAuth();
-  const doc='projects/'+FB.pid+'/databases/(default)/documents/daily/D'+day+'/scores/'+a.uid;
+  const doc='projects/'+FB.pid+'/databases/(default)/documents/daily/'+LBC(t)+'/scores/'+a.uid;
   const body={writes:[{update:{name:doc,fields:{name:{stringValue:cleanName(lbName)||'Pilot'},score:{integerValue:String(sc)},round:{integerValue:String(Math.min(60,Math.max(1,rd)))},ship:{stringValue:curShip().id}}},
     updateTransforms:[{fieldPath:'ts',setToServerValue:'REQUEST_TIME'}]}]};
   const r=await fetch(FS+':commit?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+a.tok},body:JSON.stringify(body)});
-  if(r.ok){lsSet('echo_sub_'+day,sc);lsSet('echo_subr_'+day,rd);return true}
+  if(r.ok){lsSet(LBS(t),sc);lsSet(LBR(t),rd);return true}
+  if(r.status===403){lsSet(LBS(t),Math.max(sc,lsGet(LBS(t),0)));return false}
   if(r.status===403)return false; // server already has a higher score
   throw new Error('submit '+r.status)}
-async function lbTop(day){
-  const r=await fetch(FS+'/daily/D'+day+':runQuery?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},
+async function lbTop(t){
+  const r=await fetch(FS+'/daily/'+LBC(t)+':runQuery?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({structuredQuery:{from:[{collectionId:'scores'}],orderBy:[{field:{fieldPath:'score'},direction:'DESCENDING'}],limit:50}})});
   if(!r.ok)throw new Error('top '+r.status);const j=await r.json();
   return j.filter(x=>x.document).map(x=>{const f=x.document.fields;return {id:x.document.name.split('/').pop(),name:f.name.stringValue,score:+f.score.integerValue,round:+f.round.integerValue,ship:f.ship?f.ship.stringValue:'vector'}})}
-async function lbCount(day,above){
+async function lbCount(t,above){
   const q={from:[{collectionId:'scores'}]};if(above!=null)q.where={fieldFilter:{field:{fieldPath:'score'},op:'GREATER_THAN',value:{integerValue:String(above)}}};
-  const r=await fetch(FS+'/daily/D'+day+':runAggregationQuery?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},
+  const r=await fetch(FS+'/daily/'+LBC(t)+':runAggregationQuery?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({structuredAggregationQuery:{structuredQuery:q,aggregations:[{alias:'n',count:{}}]}})});
   if(!r.ok)throw new Error('count '+r.status);const j=await r.json();return +j[0].result.aggregateFields.n.integerValue}
-async function lbRank(day,sc){const [above,total]=await Promise.all([lbCount(day,sc),lbCount(day,null)]);return {rank:above+1,total}}
+async function lbRank(t,sc){const [above,total]=await Promise.all([lbCount(t,sc),lbCount(t,null)]);return {rank:above+1,total}}
 function fmt(n){return n.toLocaleString('en-US')}
-async function afterRunLB(){ // called on daily game over
+async function syncAll(){ // make sure the all-time board has this phone's best ever
+  const sub=lsGet(LBS('all'),0);if(best>sub&&best>0)await lbSubmit('all',best,Math.min(60,Math.max(1,S.bestRound||1)))}
+async function afterRunLB(){ // called on daily/endless game over
   const el=$('worldRank');el.textContent='🌍 Sending your score…';el.onclick=openLB;
-  const prev=lsGet('echo_sub_'+DAY,0),my=Math.max(prev,score);
-  try{if(score>prev&&score>0)await lbSubmit(DAY,score,round);
-    const r=await lbRank(DAY,my);el.innerHTML='🏆 World rank today: <b>#'+fmt(r.rank)+'</b> of '+fmt(r.total)+' <u>see top 50</u>';lastRank='🌍 #'+fmt(r.rank)+' of '+fmt(r.total)+' worldwide'}
+  try{let my=score;
+    if(mode==='daily'){const prev=lsGet(LBS('day'),0);my=Math.max(prev,score);if(score>prev&&score>0)await lbSubmit('day',score,round)}
+    const pa=lsGet(LBS('all'),0);if(score>pa&&score>0)await lbSubmit('all',score,round);else await syncAll().catch(()=>{});
+    if(mode==='daily'){lbTab='day';const r=await lbRank('day',my);el.innerHTML='🏆 World rank today: <b>#'+fmt(r.rank)+'</b> of '+fmt(r.total)+' <u>see top 50</u>';lastRank='🌍 #'+fmt(r.rank)+' of '+fmt(r.total)+' worldwide'}
+    else{lbTab='all';const mine=lsGet(LBS('all'),0),r=await lbRank('all',mine);el.innerHTML='🏆 All-time rank: <b>#'+fmt(r.rank)+'</b> of '+fmt(r.total)+' <u>see top 50</u>';lastRank='🌍 #'+fmt(r.rank)+' all-time'}}
   catch(e){el.textContent='🌍 Leaderboard offline — your score is saved on this phone'}}
 async function openLB(){
   show('menu',0);show('over',0);show('lb',1);const prevState=state;state='lb';if(prevState!=='lb')lbBack=prevState==='over'?'over':'menu';
-  $('lbTitle').textContent='DAILY #'+DAY+' · WORLD TOP 50';$('lbName').value=lbName;
+  $('lbTitle').textContent=lbTab==='all'?'ALL TIME · WORLD TOP 50':'DAILY #'+DAY+' · WORLD TOP 50';$('lbtDay').classList.toggle('on',lbTab==='day');$('lbtAll').classList.toggle('on',lbTab==='all');$('lbName').value=lbName;
   const L=$('lbList');L.innerHTML='<div class="lbmsg">Loading…</div>';
-  try{const [top,me]=await Promise.all([lbTop(DAY),fbAuth().catch(()=>null)]);
+  try{if(lbTab==='all')await syncAll().catch(()=>{});const tab=lbTab;const [top,me]=await Promise.all([lbTop(tab),fbAuth().catch(()=>null)]);if(tab!==lbTab)return;
     const myId=me&&me.uid;L.innerHTML='';
-    if(!top.length)L.innerHTML='<div class="lbmsg">No scores yet today — be the first! 🚀</div>';
+    if(!top.length)L.innerHTML='<div class="lbmsg">'+(tab==='all'?'No scores yet — be the first! 🚀':'No scores yet today — be the first! 🚀')+'</div>';
     top.forEach((t,i)=>{const row=document.createElement('div');row.className='lbrow'+(t.id===myId?' me':'')+(i<3?' t'+(i+1):'');
       const sd=SHIPS.find(s=>s.id===t.ship)||SHIPS[0],cv3=document.createElement('canvas');cv3.width=48;cv3.height=48;drawShipPreview(cv3,sd);
       const rk=document.createElement('span');rk.className='rk';rk.textContent=i<3?['🥇','🥈','🥉'][i]:'#'+(i+1);
@@ -530,14 +539,15 @@ async function openLB(){
       const rd=document.createElement('span');rd.className='rd';rd.textContent='R'+t.round;
       const sc=document.createElement('span');sc.className='sc';sc.textContent=fmt(t.score);
       row.append(rk,cv3,nm,rd,sc);L.appendChild(row)});
-    const mine=lsGet('echo_sub_'+DAY,0);
-    if(mine){const r=await lbRank(DAY,mine);$('lbMe').textContent='Your best today: '+fmt(mine)+' · #'+fmt(r.rank)+' of '+fmt(r.total)}
-    else $('lbMe').textContent='Play today\'s Daily Challenge to get on the board!'}
+    const mine=lsGet(LBS(tab),0);
+    if(mine){const r=await lbRank(tab,mine);if(tab!==lbTab)return;$('lbMe').textContent=(tab==='all'?'Your best ever: ':'Your best today: ')+fmt(mine)+' · #'+fmt(r.rank)+' of '+fmt(r.total)}
+    else $('lbMe').textContent=tab==='all'?'Play any Daily or Endless run to get on the board!':'Play today\'s Daily Challenge to get on the board!'}
   catch(e){L.innerHTML='<div class="lbmsg">Couldn\'t reach the leaderboard.<br>Check your internet connection and try again.</div>';$('lbMe').textContent=''}}
 let lbBack='menu',lastRank='';
 function closeLB(){show('lb',0);if(lbBack==='over'){show('over',1);state='over'}else{show('menu',1);state='menu';menuInfo()}}
 function saveName(){const n=cleanName($('lbName').value);if(!n)return;lbName=n;lsSet('echo_name',n);$('lbSaved').textContent='Saved ✓';setTimeout(()=>{$('lbSaved').textContent=''},1500);
-  const mine=lsGet('echo_sub_'+DAY,0);if(mine)lbSubmit(DAY,mine,lsGet('echo_subr_'+DAY,1)).then(()=>openLB()).catch(()=>{})}
+  const md=lsGet(LBS('day'),0),ma=lsGet(LBS('all'),0);
+  Promise.all([md?lbSubmit('day',md,lsGet(LBR('day'),1)):0,ma?lbSubmit('all',ma,lsGet(LBR('all'),1)):0]).then(()=>openLB()).catch(()=>{})}
 
 /* ---------- friend challenges ---------- */
 let curSeed=0,chal=null,chalBeat=false;
