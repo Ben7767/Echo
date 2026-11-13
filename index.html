@@ -722,7 +722,7 @@ function kill(e,echo,c,noDrop){
   if(combo>=5&&(combo-1)%4===0){texts.push({x:e.x,y:e.y-18,s:'x'+mult+' COMBO',c:'#ffe14d',t:0});sfx.combo(Math.floor((combo-1)/4))}
   const big=e.type==='tank'||e.type==='shoot';
   burst(e.x,e.y,col(e),big?32:e.type==='swarm'?8:16,big?5.5:3.5);ring(e.x,e.y,col(e),big?75:40,big?4:2);
-  shake=Math.max(shake,big?10:e.type==='swarm'?2:4);sfx.boom(big?2:1);if(big){hitStop=Math.max(hitStop,3);buzz(18,90)}
+  shake=Math.max(shake,big?10:e.type==='swarm'?2:4);sfx.boom(big?2:1);if(big){hitStop=Math.max(hitStop,3);buzz(30,140)}else buzz(14,90)
   if(echo)texts.push({x:e.x,y:e.y,s:'+'+pts,c:c,t:0});
   if(e.type==='tank')for(let i=0;i<3;i++){const a=i/3*TAU;spawned.push(mk('chase',e.x+Math.cos(a)*14,e.y+Math.sin(a)*14,{r:8,sp:Math.min(3,1.4+round*.14),warn:0}))}
   if(!noDrop&&pups.length<4&&Math.random()<(e.type==='tank'?.25:e.type==='shoot'?.15:e.type==='swarm'?.015:.035))drop(e.x,e.y);
@@ -740,7 +740,7 @@ function hit(src,r){
   if(pShield>0)return;
   if(shieldC>0){shieldC--;inv=70;ring(P.x,P.y,'#36d6ff',90,4);burst(P.x,P.y,'#36d6ff',24,4);sfx.block();buzz(45,160);
     texts.push({x:P.x,y:P.y-26,s:'BLOCKED',c:'#36d6ff',t:0});gb=gb.filter(b=>Math.hypot(b.x-P.x,b.y-P.y)>80);eb=eb.filter(b=>Math.hypot(b.x-P.x,b.y-P.y)>80);return}
-  hp--;inv=100;combo=0;comboT=0;shake=16;flash=.7;hitStop=8;sfx.hit();buzz(140,255);burst(P.x,P.y,'#36d6ff',40,6);ring(P.x,P.y,'#ff3d6e',120,5);
+  hp--;inv=100;combo=0;comboT=0;shake=16;flash=.7;hitStop=8;sfx.hit();buzzP([0,90,60,160]);burst(P.x,P.y,'#36d6ff',40,6);ring(P.x,P.y,'#ff3d6e',120,5);
   for(const e of enemies)if(e.type!=='boss'&&Math.hypot(e.x-P.x,e.y-P.y)<150){e.dead=1;burst(e.x,e.y,col(e),10,3)}
   enemies=enemies.filter(e=>!e.dead);
   gb=gb.filter(b=>Math.hypot(b.x-P.x,b.y-P.y)>110);eb=eb.filter(b=>Math.hypot(b.x-P.x,b.y-P.y)>130);
